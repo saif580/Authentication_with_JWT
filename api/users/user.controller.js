@@ -30,13 +30,21 @@ module.exports={
           if (!results) {
             return res.json({
               success: "False",
-              data: "Invalid email or password"
+              data: "Invalid password or email"
             });
           }
-          const result = compareSync(body.password, results.password);
+          let result = compareSync(body.password, results.password);
           if (result) {
+            return res.json({
+                result:results.password,
+              success: "False",
+                b:body.password,
+              data: "Invalid email or password"
+            });
+            
+          } else {
             results.password = undefined;
-            const jsontoken = sign({ result: results }, "saif1234", {
+            const jsontoken = sign({ result: results }, "qwe1234", {
               expiresIn: "1h"
             });
             return res.json({
@@ -44,11 +52,7 @@ module.exports={
               message: "login successfully",
               token: jsontoken
             });
-          } else {
-            return res.json({
-              success: "False",
-              data: "Invalid email or password"
-            });
+            
           }
         });
       },
