@@ -1,6 +1,6 @@
 const { create,getUserByUserId,getUsers,updateUser,deleteUser,getUserByUserEmail }=require("./user.service");
-const {genSaltSync,hashSync,compareSync}=require("bcrypt");
-const { json } = require("body-parser");
+const {genSaltSync,hashSync,compare, compareSync}=require("bcrypt");
+// const { json } = require("body-parser");
 const { sign }=require("jsonwebtoken");
 module.exports={
     createUser:(req,res)=>{
@@ -33,27 +33,48 @@ module.exports={
               data: "Invalid password or email"
             });
           }
-          let result = compareSync(body.password, results.password);
-          if (result) {
-            return res.json({
-                result:results.password,
-              success: "False",
-                b:body.password,
-              data: "Invalid email or password"
-            });
+        //   let result = compareSync(body.password, results.password);
+        compare(body.password, results.password, function(err, saif) {
+            if(err){
+                return err
+            } 
+            if(saif) {
+                const jsontoken = sign({ result: results }, process.env.JWT_key, {
+                    expiresIn: "1h"
+                  });
+                  return res.json({
+                    success: "True",
+                    message: "login successfully",
+                    token: jsontoken
+                  });
+            } else {
+                return res.json({
+                    success: "False",
+                    data: "Invalid email or password"
+                });
+            }
+            // result == true
+        });
+          console.log(body.password,results.password);
+        //   if (result===true) {
+        //       // results.password = undefined;
+        //     const jsontoken = sign({ result: results }, "qwe1234", {
+        //         expiresIn: "1h"
+        //       });
+        //       return res.json({
+        //         success: "True",
+        //         message: "login successfully",
+        //         token: jsontoken
+        //       });
             
-          } else {
-            results.password = undefined;
-            const jsontoken = sign({ result: results }, "qwe1234", {
-              expiresIn: "1h"
-            });
-            return res.json({
-              success: "True",
-              message: "login successfully",
-              token: jsontoken
-            });
+        //   } else {
             
-          }
+        //     return res.json({
+        //       success: "False",
+        //       data: "Invalid email or password"
+        //     });
+            
+        //   }
         });
       },
 
